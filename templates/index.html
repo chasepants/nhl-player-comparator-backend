@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hockey Player Query</title>
+    <script>
+        async function fetchPlayerData(event) {
+            event.preventDefault();
+            const player1 = document.getElementById('player1').value;
+            const player2 = document.getElementById('player2').value;
+
+            if (!player1 || !player2) {
+                alert('Please enter both player names.');
+                return;
+            }
+
+            const response = await fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ player1, player2 }),
+            });
+
+            const resultDiv = document.getElementById('results');
+            resultDiv.innerHTML = '';
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data)
+                if (data.length === 0) {
+                    resultDiv.innerHTML = '<p>No results found.</p>';
+                } else {
+                    resultDiv.innerHTML += `<div> <h2>${player1}</h2><h2>${player2}</h2><div>`
+                    resultDiv.innerHTML += `<div> <img src="${data.player_one_image.value}" /> <img src="${data.player_two_image.value} /></div>`
+
+                    data.teams.forEach(player => {
+                        resultDiv.innerHTML += `
+                            <p><strong>Team:</strong> ${player.team}</p>
+                            <hr>
+                        `;
+                    });
+                }
+            } else {
+                const error = await response.json();
+                resultDiv.innerHTML = `<p>Error: ${error.error}</p>`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Hockey Player Query</h1>
+    <form onsubmit="fetchPlayerData(event)">
+        <label for="player1">Player 1:</label>
+        <input type="text" id="player1" placeholder="e.g., Wayne_Gretzky" required>
+        <br><br>
+        <label for="player2">Player 2:</label>
+        <input type="text" id="player2" placeholder="e.g., Mario_Lemieux" required>
+        <br><br>
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+</body>
+</html>
